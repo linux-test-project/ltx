@@ -2,6 +2,7 @@
 /*
  * Copyright (c) 2022 Richard Palethorpe <rpalethorpe@suse.com>
  * Copyright (c) 2023 Andrea Cervesato <andrea.cervesato@suse.com>
+ * Copyright (c) 2025 Cyril Hrubis <chrubis@suse.cz>
  */
 
 #define _GNU_SOURCE /* CLOCK_MONOTONIC */
@@ -213,9 +214,17 @@ static void ltx_send_message(
 
 	ssize_t pos = 0, ret;
 	do {
-		ret = write(session->stdout_fd, msg->data, msg->length);
-		if (ret == -1)
+		ret = write(session->stdout_fd, msg->data+pos, msg->length-pos);
+
+		if (ret == -1 && errno == EAGAIN) {
+			usleep(100);
+			continue;
+		}
+
+		if (ret == -1) {
+			fprintf(stderr, "write() failed %s", strerror(errno));
 			break;
+		}
 
 		pos += ret;
 	} while (pos < (ssize_t)msg->length);
