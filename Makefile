@@ -40,6 +40,9 @@ all: $(TARGET_SRCS)
 	$(CC) $(CFLAGS) $(INCLUDES) \
 		$(TARGET_SRCS) -o $(TARGET)
 
+static: CFLAGS += -static
+static: all
+
 debug: CFLAGS += $(CFLAGS_DEBUG)
 debug: all
 
